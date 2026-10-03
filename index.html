@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f4a5e">
+<meta name="description" content="App gratuita de Inspección Soldadura Chile para aprender ensayos no destructivos: VT y PT.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Academia NDT">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>Academia NDT Chile</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: app móvil de una columna (máx 480px), barra de pestañas inferior fija, tarjetas solo para elementos accionables */
+:root{
+  --bg:#eef1f3; --surface:#ffffff; --ink:#17212b; --muted:#5a6773; --line:#d5dbe0;
+  --dye:#c3243a; --dye-soft:#fbe7ea; --steel:#2f4a5e; --ok:#1f7a4a; --ok-soft:#e3f3ea; --bad:#b3261e; --bad-soft:#fbe9e7;
+  --weld:#8b98a3; --metal:#c4ccd3; --dev:#ffffff;
+  --display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --body:"IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#11171c; --surface:#1a232a; --ink:#e7ecef; --muted:#9aa7b1; --line:#2c3943;
+  --dye:#f0566b; --dye-soft:#3a1d24; --steel:#8fb3cc; --ok:#5fcf93; --ok-soft:#173326; --bad:#ff8a80; --bad-soft:#3b1f1d;
+  --weld:#6c7a85; --metal:#3a4852; --dev:#e4e8eb; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11171c; --surface:#1a232a; --ink:#e7ecef; --muted:#9aa7b1; --line:#2c3943;
+  --dye:#f0566b; --dye-soft:#3a1d24; --steel:#8fb3cc; --ok:#5fcf93; --ok-soft:#173326; --bad:#ff8a80; --bad-soft:#3b1f1d;
+  --weld:#6c7a85; --metal:#3a4852; --dev:#e4e8eb; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.app{max-width:480px;margin:0 auto;padding:0 16px;padding-block:16px 96px;display:flex;flex-direction:column;gap:20px}
+h1,h2,h3{font-family:var(--display);font-weight:700;letter-spacing:.01em;text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:2rem} h2{font-size:1.5rem} h3{font-size:1.2rem}
+p{margin:0}
+.eyebrow{font:500 .72rem var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.demo{font-size:.8rem;color:var(--muted);border:1px dashed var(--line);border-radius:8px;padding:8px 12px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:36px;height:36px;border-radius:8px;background:var(--steel);display:grid;place-items:center;color:var(--surface);font:700 1rem var(--display)}
+.pill{font:500 .72rem var(--mono);padding:3px 8px;border-radius:99px;background:var(--ok-soft);color:var(--ok);white-space:nowrap}
+.stack{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:3px solid var(--steel);outline-offset:2px}
+.route{display:grid;grid-template-columns:56px 1fr auto;gap:14px;align-items:center;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.route .code{font:700 1.5rem var(--display);color:var(--surface);background:var(--steel);border-radius:10px;height:56px;display:grid;place-items:center}
+.route.pt .code{background:var(--dye)}
+.route.locked{opacity:.55;cursor:default}
+.route .info{min-width:0;display:flex;flex-direction:column;gap:6px}
+.bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.bar span{display:block;height:100%;background:var(--ok);transition:width .3s}
+.chev{color:var(--muted);font-family:var(--mono)}
+.btn{background:var(--ink);color:var(--bg);border:0;border-radius:10px;padding:12px 16px;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:default}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.back{background:none;border:0;padding:0;color:var(--muted);font:500 .85rem var(--mono);align-self:flex-start}
+.lesson{display:flex;justify-content:space-between;align-items:center;gap:12px;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.lesson .t{min-width:0}
+.check{width:24px;height:24px;border-radius:50%;border:2px solid var(--line);flex:none;display:grid;place-items:center;font-size:.8rem}
+.check.done{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.body p+p,.body ul{margin-top:10px}
+.body ul{padding-left:20px;margin-bottom:0}
+.body li+li{margin-top:4px}
+.key{background:var(--dye-soft);border-radius:10px;padding:12px 14px;font-size:.92rem}
+.key b{color:var(--dye)}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.feedback{border-left:3px solid var(--ok);padding:4px 0 4px 12px;font-size:.92rem}
+.feedback.no{border-color:var(--bad)}
+.progress-dots{display:flex;gap:4px}
+.progress-dots i{flex:1;height:4px;border-radius:2px;background:var(--line)}
+.progress-dots i.on{background:var(--ink)}
+.figure{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px}
+.figure svg{display:block;width:100%;height:auto}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+.stat b{display:block;font:700 1.6rem var(--display);font-variant-numeric:tabular-nums}
+.stat span{font-size:.75rem;color:var(--muted)}
+label{font-weight:600;font-size:.9rem}
+input[type=email],input[type=text]{width:100%;font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
+nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs button{background:none;border:0;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted)}
+nav.tabs button.on{color:var(--ink);font-weight:600}
+nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+.ill{margin:0;background:var(--bg);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}.ill svg{width:100%;height:auto;display:block}.ill figcaption{font:500 .72rem var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}.illgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.body .ill+p,.body .illgrid+ul,.body p+.ill{margin-top:10px}
+.photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-block:8px 14px}.photo{margin:0;display:flex;flex-direction:column;gap:6px}.photo img,.photo-q img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#fff;display:block}.photo figcaption{display:flex;flex-direction:column;gap:2px;font-size:.82rem;line-height:1.35}.photo figcaption span{color:var(--muted)}
+/* ---- Movimiento ---- */
+:root{--ease:cubic-bezier(.2,.8,.2,1);--fast:140ms;--med:280ms}
+.app.enter-fwd>*{animation:inFwd var(--med) var(--ease) both}
+.app.enter-back>*{animation:inBack var(--med) var(--ease) both}
+.app>*:nth-child(2){animation-delay:30ms}.app>*:nth-child(3){animation-delay:60ms}.app>*:nth-child(4){animation-delay:90ms}.app>*:nth-child(n+5){animation-delay:120ms}
+@keyframes inFwd{from{opacity:.0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@keyframes inBack{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.btn,.route,.lesson,.opt,nav.tabs button,.back{transition:transform var(--fast) var(--ease),background-color var(--fast),border-color var(--fast),box-shadow var(--fast)}
+.btn:active,.route:not(.locked):active,.lesson:active,.opt:not(:disabled):active{transform:scale(.97)}
+@media (hover:hover){.route:not(.locked):hover,.lesson:hover,.opt:not(:disabled):hover{border-color:var(--steel);transform:translateY(-1px)}.route:not(.locked):hover .chev{transform:translateX(3px)}}
+.chev{transition:transform var(--fast) var(--ease)}
+nav.tabs button svg{transition:transform var(--med) var(--ease)}
+nav.tabs button.on svg{transform:translateY(-2px) scale(1.1)}
+nav.tabs button::after{content:"";width:0;height:3px;border-radius:2px;background:var(--dye);transition:width var(--med) var(--ease)}nav.tabs button.on::after{width:18px}
+@keyframes grow{from{width:0}}
+.opt.right{animation:pop 320ms var(--ease)}
+.opt.wrong{animation:shake 360ms var(--ease)}
+@keyframes pop{40%{transform:scale(1.03)}}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+.opt:disabled:not(.right):not(.wrong){opacity:.55}
+.feedback{animation:inFwd var(--med) var(--ease) both}
+.progress-dots i{transition:background-color var(--med)}
+.bar span{transition:width 700ms var(--ease)}
+.check.done{animation:pop 320ms var(--ease)}
+.score{font-variant-numeric:tabular-nums}
+.ring{width:140px;height:140px;align-self:center}
+.ring circle{fill:none;stroke-width:10}
+.ring .bg{stroke:var(--line)}
+.ring .fg{stroke:var(--ok);stroke-linecap:round;transform:rotate(-90deg);transform-origin:center;transition:stroke-dashoffset 900ms var(--ease)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app" id="app"></div>
+<nav class="tabs" aria-label="Secciones"><div class="in">
+  <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/></svg>Inicio</button>
+  <button data-tab="learn"><svg viewBox="0 0 24 24"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>Aprender</button>
+  <button data-tab="practice"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>Práctica</button>
+  <button data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
+</div></nav>
+
+<script>
+/* ---------- Contenido (borrador para validar por Francisco) ---------- */
+
+/* ---------- Ilustraciones (esquemas; se complementarán con fotos reales) ---------- */
+const T=(x,y,t,o="")=>`<text x="${x}" y="${y}" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink)" ${o}>${t}</text>`;
+const fig=(svg,cap)=>`<figure class="ill">${svg}<figcaption>${cap}</figcaption></figure>`;
+const mini=(extra,cap="M30 60 Q75 35 120 60 Z")=>`<svg viewBox="0 0 150 100" role="img"><rect x="0" y="60" width="150" height="35" fill="var(--metal)"/><path d="${cap}" fill="var(--weld)" stroke="var(--ink)" stroke-width="1.2"/><line x1="0" y1="60" x2="150" y2="60" stroke="var(--ink)" stroke-width="1.2"/>${extra}</svg>`;
+const ILL={
+  vtCond:`<svg viewBox="0 0 320 195" role="img" aria-label="Ojo a 600 mm o menos, ángulo de 30 grados o más y 1000 lux">
+    <rect x="10" y="160" width="300" height="22" fill="var(--metal)"/><line x1="10" y1="160" x2="310" y2="160" stroke="var(--ink)" stroke-width="1.5"/>
+    <path d="M200 160 Q220 146 240 160 Z" fill="var(--weld)" stroke="var(--ink)" stroke-width="1.2"/>
+    <ellipse cx="60" cy="40" rx="18" ry="10" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/><circle cx="64" cy="42" r="5" fill="var(--ink)"/>
+    <line x1="66" y1="45" x2="216" y2="157" stroke="var(--steel)" stroke-width="2" stroke-dasharray="6 4"/>
+    ${T(150,92,"≤ 600 mm",'font-weight="600"')}
+    <path d="M176 160 A40 40 0 0 1 184 136" fill="none" stroke="var(--dye)" stroke-width="2.5"/>
+    ${T(120,152,"≥ 30°",'font-weight="600" fill="var(--dye)"')}
+    <path d="M262 22 h28 l-6 14 h-16 z" fill="var(--steel)"/>
+    <path d="M268 38 L232 150 M276 38 L262 150 M284 38 L292 150" stroke="var(--dye)" stroke-width="1.2" stroke-dasharray="3 4"/>
+    ${T(210,18,"≥ 1000 lux",'font-weight="600"')}
+  </svg>`,
+  discont:`<div class="illgrid">
+    ${fig(mini(`<path d="M114 60 Q121 70 130 60" fill="var(--bg)" stroke="var(--dye)" stroke-width="2.5"/>`),"Socavación")}
+    ${fig(mini(`<path d="M118 60 Q136 52 142 61 Q132 63 118 60 Z" fill="var(--weld)" stroke="var(--ink)" stroke-width="1.2"/><line x1="121" y1="61" x2="140" y2="61" stroke="var(--dye)" stroke-width="2.5"/>`),"Solapamiento")}
+    ${fig(mini(`<circle cx="58" cy="52" r="3.5" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/><circle cx="74" cy="48" r="2.5" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/><circle cx="90" cy="51" r="3.5" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/>`),"Porosidad")}
+    ${fig(mini(`<path d="M56 50 L64 54 L71 47 L79 52 L86 46 L94 51" fill="none" stroke="var(--dye)" stroke-width="2.5" stroke-linecap="round"/>`),"Grieta")}
+    ${fig(mini(`<path d="M30 60 Q75 74 120 60 Z" fill="var(--bg)" stroke="var(--dye)" stroke-width="2.5"/>`,"M30 60 L120 60 Z"),"Falta de llenado")}
+    ${fig(mini(`<line x1="138" y1="60" x2="138" y2="22" stroke="var(--dye)" stroke-width="2"/><line x1="132" y1="22" x2="144" y2="22" stroke="var(--dye)" stroke-width="2"/>`,"M30 60 Q75 -14 120 60 Z"),"Refuerzo excesivo")}
+  </div>`,
+  ptCap:`<svg viewBox="0 0 320 150" role="img" aria-label="El penetrante entra en la grieta y el revelador lo extrae">
+    <rect x="10" y="50" width="140" height="70" fill="var(--metal)"/><rect x="10" y="44" width="140" height="6" fill="var(--dye)" opacity=".75"/>
+    <path d="M74 50 L80 110 L86 50 Z" fill="var(--dye)"/><path d="M80 34 v8 m-4 -4 l4 4 4 -4" stroke="var(--dye)" stroke-width="2" fill="none"/>
+    ${T(10,140,"1. El penetrante entra")}
+    <rect x="170" y="50" width="140" height="70" fill="var(--metal)"/><rect x="170" y="40" width="140" height="10" fill="var(--dev)" stroke="var(--line)"/>
+    <path d="M234 50 L240 110 L246 50 Z" fill="var(--dye)"/><ellipse cx="240" cy="42" rx="16" ry="6" fill="var(--dye)"/>
+    ${T(170,140,"2. El revelador lo saca")}
+  </svg>`,
+  ptSteps:`<svg viewBox="0 0 320 120" role="img" aria-label="Aplicar penetrante, remover exceso, aplicar revelador, inspeccionar">
+    ${[0,1,2,3].map(i=>{const x=i*80+8;return `<rect x="${x}" y="58" width="64" height="22" fill="var(--metal)"/><path d="M${x+29} 58 L${x+32} 78 L${x+35} 58 Z" fill="var(--dye)"/>`}).join("")}
+    <rect x="8" y="53" width="64" height="5" fill="var(--dye)" opacity=".75"/><circle cx="28" cy="38" r="3" fill="var(--dye)"/><circle cx="44" cy="30" r="3" fill="var(--dye)"/><circle cx="54" cy="42" r="3" fill="var(--dye)"/>
+    <path d="M98 50 l40 -14 l6 10 l-40 14 z" fill="var(--steel)"/>
+    <rect x="168" y="50" width="64" height="8" fill="var(--dev)" stroke="var(--line)"/><circle cx="182" cy="32" r="2" fill="var(--muted)"/><circle cx="200" cy="26" r="2" fill="var(--muted)"/><circle cx="216" cy="34" r="2" fill="var(--muted)"/>
+    <rect x="248" y="50" width="64" height="8" fill="var(--dev)" stroke="var(--line)"/><ellipse cx="280" cy="52" rx="9" ry="4" fill="var(--dye)"/>
+    <ellipse cx="280" cy="26" rx="12" ry="7" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.5"/><circle cx="280" cy="27" r="3.5" fill="var(--ink)"/>
+    ${T(8,104,"Aplicar")}${T(88,104,"Remover")}${T(168,104,"Revelar")}${T(248,104,"Inspeccionar")}
+  </svg>`,
+  ptInd:`<svg viewBox="0 0 320 130" role="img" aria-label="Indicación lineal frente a indicación redondeada">
+    <rect x="20" y="50" width="120" height="8" rx="4" fill="var(--dye)"/>
+    <line x1="20" y1="38" x2="140" y2="38" stroke="var(--ink)"/><line x1="20" y1="33" x2="20" y2="43" stroke="var(--ink)"/><line x1="140" y1="33" x2="140" y2="43" stroke="var(--ink)"/>${T(76,30,"L")}
+    <line x1="150" y1="50" x2="150" y2="58" stroke="var(--ink)"/>${T(155,58,"W")}
+    ${T(20,90,"L &gt; 3W",'font-weight="600"')}${T(20,106,"Lineal")}
+    <ellipse cx="250" cy="54" rx="14" ry="10" fill="var(--dye)"/>
+    ${T(200,90,"L ≤ 3W",'font-weight="600"')}${T(200,106,"Redondeada")}
+  </svg>`
+};
+
+
+/* ---------- Ilustraciones de Francisco (lápiz y acuarela) ---------- */
+const IMG=(f,alt)=>`<img src="img/${f}.jpg" alt="${alt}" loading="lazy" width="640" height="640">`;
+const GAL=[
+  {g:"Superficiales: se ven con VT y se confirman con PT o MT",items:[
+    ["grieta-longitudinal","Grieta longitudinal","Paralela al eje del cordón."],
+    ["grieta-transversal","Grieta transversal","Perpendicular al eje del cordón. Puede seguir hacia el metal base."],
+    ["grieta-crater","Grieta de cráter","En el cráter final, a menudo en estrella. Aparece al cortar el arco sin rellenar el cráter."],
+    ["porosidad-superficial","Porosidad superficial","Poros abiertos en la cara del cordón por gas atrapado."],
+    ["perforacion","Perforación","Agujero que atraviesa la soldadura por exceso de calor."]]},
+  {g:"En la raíz: visible por el reverso; si no hay acceso, UT o RT",items:[
+    ["falta-penetracion","Falta de penetración","El metal de soldadura no llega a la raíz de la junta."]]},
+  {g:"Internas: requieren UT o RT",items:[
+    ["inclusion-escoria","Inclusión de escoria","Escoria atrapada, típica de una mala limpieza entre pasadas."],
+    ["porosidad-interna","Porosidad interna","Poros dentro del cordón. En RT se ven como manchas oscuras redondeadas."]]}
+];
+const galleryBody=()=>GAL.map(sec=>`<div class="eyebrow">${sec.g}</div><div class="photos">${sec.items.map(([f,t,d])=>`<figure class="photo">${IMG(f,t)}<figcaption><b>${t}</b><span>${d}</span></figcaption></figure>`).join("")}</div>`).join("");
+
+const COURSES = {
+  VT:{name:"Inspección visual",code:"VT",cls:"",lessons:[
+    {t:"Qué es la inspección visual",min:3,body:`<p>La inspección visual (VT) es el primer ensayo que se hace y el más usado. Se aplica antes, durante y después de soldar.</p><p>Antes de soldar se revisa la preparación de la junta (bisel, separación de raíz, limpieza). Durante, se controlan los parámetros y la limpieza entre pasadas. Después se revisa la soldadura terminada.</p><div class="key"><b>Clave:</b> muchos problemas que encontraría un ensayo más caro se pueden evitar con una buena VT antes y durante la soldadura.</div>`},
+    {t:"Condiciones para inspeccionar",min:4,body:`${fig(ILL.vtCond,"Condiciones mínimas · ASME V, Art. 9")}<p>Para una inspección visual directa, ASME Sección V, Artículo 9, pide:</p><ul><li>Iluminación mínima de <b>1000 lux</b> en la superficie.</li><li>Ojo a no más de <b>600 mm</b> de la superficie.</li><li>Ángulo de visión no menor de <b>30°</b> respecto de la superficie.</li></ul><p>Si no se cumplen, se puede usar inspección visual remota (espejos, boroscopio, cámara), siempre que se demuestre una resolución equivalente.</p><div class="key"><b>Ejemplo práctico:</b> dentro de un estanque con poca luz, lleva una linterna y verifica el nivel con un luxómetro antes de empezar.</div>`},
+    {t:"Discontinuidad o defecto",min:3,body:`<p>Una <b>discontinuidad</b> es cualquier interrupción en la estructura normal del material, como un poro o una socavación.</p><p>Un <b>defecto</b> es una discontinuidad que supera el criterio de aceptación del código o especificación aplicable. Por eso un mismo poro puede ser aceptable en una obra y rechazable en otra.</p><div class="key"><b>Regla:</b> el inspector informa discontinuidades y las evalúa contra el código del contrato. No todo lo que se ve es defecto.</div>`},
+    {t:"Discontinuidades superficiales típicas",min:5,body:`${ILL.discont}<ul><li><b>Socavación:</b> canal en el metal base junto al pie de la soldadura que no fue rellenado.</li><li><b>Solapamiento:</b> metal de soldadura que rebalsa sobre el metal base sin fundirse con él.</li><li><b>Porosidad:</b> cavidades redondeadas por gas atrapado.</li><li><b>Grieta:</b> discontinuidad tipo fisura, con punta aguda. Es la más severa.</li><li><b>Falta de llenado:</b> la cara de la soldadura queda bajo la superficie del metal base.</li><li><b>Refuerzo excesivo:</b> sobremonta mayor a la permitida.</li></ul>`},
+    {t:"Galería de discontinuidades",min:5,body:`<p>Ilustraciones de discontinuidades reales, agrupadas según el método que las detecta.</p>${galleryBody()}`}
+  ]},
+  PT:{name:"Líquidos penetrantes",code:"PT",cls:"pt",lessons:[
+    {t:"Cómo funciona el PT",min:3,body:`${fig(ILL.ptCap,"Capilaridad: así se forma la indicación")}<p>El ensayo de líquidos penetrantes (PT) aprovecha la <b>capilaridad</b>: un líquido de baja tensión superficial entra en las discontinuidades abiertas a la superficie.</p><p>Luego un revelador "saca" ese líquido y muestra una indicación visible, más ancha que la discontinuidad real.</p><div class="key"><b>Límite:</b> solo detecta discontinuidades <b>abiertas a la superficie</b> y no sirve en materiales porosos.</div>`},
+    {t:"Los pasos del ensayo",min:4,body:`${fig(ILL.ptSteps,"Secuencia básica de PT")}<ul><li>Limpieza previa y secado.</li><li>Aplicación del penetrante.</li><li>Tiempo de penetración, definido en el procedimiento.</li><li>Remoción del exceso de penetrante.</li><li>Aplicación del revelador.</li><li>Inspección e interpretación.</li><li>Limpieza final.</li></ul><div class="key"><b>Error común:</b> remover el exceso con solvente rociado directo sobre la pieza. Así se lava el penetrante de dentro de la discontinuidad. Se usa un paño humedecido.</div>`},
+    {t:"Tipos de penetrante",min:3,body:`<p>Por tipo de tinte:</p><ul><li><b>Tipo I:</b> fluorescente, se inspecciona con luz UV-A en un área oscura.</li><li><b>Tipo II:</b> visible (rojo), se inspecciona con luz blanca.</li></ul><p>Por método de remoción:</p><ul><li><b>A:</b> lavable con agua.</li><li><b>B:</b> postemulsificable lipofílico.</li><li><b>C:</b> removible con solvente.</li><li><b>D:</b> postemulsificable hidrofílico.</li></ul>`},
+    {t:"Interpretar indicaciones",min:4,body:`<p>Según ASME Sección V y VIII:</p>${fig(ILL.ptInd,"Regla de 3 veces el ancho")}<ul><li><b>Indicación lineal:</b> su largo es mayor que 3 veces su ancho. Suele corresponder a grietas o falta de fusión.</li><li><b>Indicación redondeada:</b> circular o elíptica, con largo igual o menor a 3 veces su ancho. Suele corresponder a poros.</li></ul><p>La interpretación final se hace entre 10 y 60 minutos después de aplicar el revelador (ASME V, Art. 6).</p>`}
+  ]},
+  MT:{name:"Partículas magnéticas",code:"MT",locked:true,lessons:[]},
+  UT:{name:"Ultrasonido",code:"UT",locked:true,lessons:[]},
+  RT:{name:"Radiografía",code:"RT",locked:true,lessons:[]}
+};
+
+const QUIZ = {
+  VT:[
+    {q:"¿Cuál es la iluminación mínima para VT directa según ASME V, Art. 9?",o:["300 lux","500 lux","1000 lux","2000 lux"],a:2,e:"ASME V, Art. 9 exige al menos 1000 lux en la superficie inspeccionada."},
+    {q:"¿Qué diferencia a un defecto de una discontinuidad?",o:["El defecto siempre es una grieta","El defecto supera el criterio de aceptación","La discontinuidad solo es interna","No hay diferencia"],a:1,e:"Toda discontinuidad que supera el criterio de aceptación del código aplicable es un defecto."},
+    {q:"Canal en el metal base junto al pie de la soldadura, sin rellenar:",o:["Solapamiento","Socavación","Falta de llenado","Porosidad"],a:1,e:"Eso es socavación. La falta de llenado está en la cara de la soldadura, no en el metal base."},
+    {q:"¿Cuándo se hace la inspección visual?",o:["Solo al terminar","Solo antes de soldar","Antes, durante y después de soldar","Solo si falla otro ensayo"],a:2,e:"La VT acompaña todo el proceso. Detectar problemas en la preparación de la junta ahorra reparaciones."},
+    {q:"¿Cuál es la discontinuidad más severa en general?",o:["Salpicadura","Porosidad aislada","Grieta","Refuerzo excesivo"],a:2,e:"La grieta tiene punta aguda que concentra esfuerzos y puede propagarse. La mayoría de los códigos no la acepta."}
+  ],
+  PT:[
+    {q:"¿Qué fenómeno físico usa el ensayo de líquidos penetrantes?",o:["Magnetismo","Capilaridad","Reflexión del sonido","Absorción de radiación"],a:1,e:"El penetrante entra en las discontinuidades por capilaridad."},
+    {q:"¿Qué discontinuidades detecta el PT?",o:["Solo internas","Abiertas a la superficie","Subsuperficiales","Todas"],a:1,e:"El penetrante solo puede entrar en lo que está abierto a la superficie."},
+    {q:"Un penetrante Tipo I es:",o:["Visible rojo","Fluorescente","Lavable con agua","Removible con solvente"],a:1,e:"Tipo I es fluorescente y se inspecciona con luz UV-A. El Tipo II es el visible rojo."},
+    {q:"Una indicación de 6 mm de largo y 1 mm de ancho es:",o:["Redondeada","Lineal","No relevante","Falsa"],a:1,e:"Su largo (6 mm) es mayor que 3 veces su ancho (3 mm), así que es lineal."},
+    {q:"¿Cuál es el error al remover el exceso con método C?",o:["Usar paño seco primero","Rociar solvente directo sobre la pieza","Secar antes del revelador","Limpiar en una sola dirección"],a:1,e:"Rociar solvente directo lava el penetrante de dentro de la discontinuidad. Se usa un paño humedecido."}
+  ]
+};
+
+/* Práctica visual: esquemas SVG; en la app real irán fotos propias de Francisco */
+const weldBase = (extra) => `<svg viewBox="0 0 320 170" role="img"><rect x="0" y="110" width="320" height="60" fill="var(--metal)"/><path d="M60 110 Q160 70 260 110 Z" fill="var(--weld)"/><path d="M60 110 Q160 70 260 110" fill="none" stroke="var(--ink)" stroke-width="1.5"/><line x1="0" y1="110" x2="320" y2="110" stroke="var(--ink)" stroke-width="1.5"/>${extra}<text x="12" y="160" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)">CORTE TRANSVERSAL (ESQUEMA)</text></svg>`;
+const PRACTICE = [
+  {m:"VT",img:IMG("grieta-transversal","Cordón con una grieta"),q:"¿Qué discontinuidad ves?",o:["Grieta longitudinal","Grieta transversal","Socavación","Falta de fusión"],a:1,e:"La grieta cruza el cordón en forma perpendicular a su eje: grieta transversal."},
+  {m:"VT",img:IMG("grieta-crater","Final de un cordón con fisuras"),q:"Fisuras en estrella al final del cordón. ¿Qué son?",o:["Porosidad","Grieta de cráter","Perforación","Salpicadura"],a:1,e:"Es una grieta de cráter. Se previene rellenando el cráter antes de cortar el arco."},
+  {m:"VT",img:IMG("perforacion","Cordón con un agujero"),q:"¿Qué discontinuidad muestra el cordón?",o:["Porosidad superficial","Perforación","Falta de llenado","Grieta"],a:1,e:"Es una perforación: el exceso de calor fundió el material de lado a lado."},
+  {m:"RT",img:IMG("inclusion-escoria","Corte de soldadura con inclusiones oscuras"),q:"Inclusiones alargadas y oscuras dentro del cordón. ¿Qué son y con qué método se detectan?",o:["Porosidad, con VT","Inclusión de escoria, con UT o RT","Grieta, con PT","Falta de llenado, con VT"],a:1,e:"Es escoria atrapada dentro del cordón. Como es interna, se detecta con UT o RT, no con VT ni PT."},
+  {m:"VT",img:IMG("falta-penetracion","Junta en V vista en corte"),q:"La raíz de la junta quedó sin fundir. ¿Qué discontinuidad es?",o:["Falta de penetración","Socavación","Solapamiento","Refuerzo excesivo"],a:0,e:"El metal de soldadura no llegó a la raíz: falta de penetración."},
+  {m:"VT",svg:weldBase(`<path d="M248 110 Q256 122 268 110" fill="var(--bg)" stroke="var(--dye)" stroke-width="2.5"/><circle cx="258" cy="116" r="22" fill="none" stroke="var(--dye)" stroke-dasharray="4 3"/>`),q:"¿Qué discontinuidad marca el círculo?",o:["Socavación","Solapamiento","Falta de llenado","Grieta"],a:0,e:"Hay un canal en el metal base junto al pie de la soldadura: socavación."},
+  {m:"VT",svg:weldBase(`<path d="M260 110 Q285 104 292 111 Q280 116 260 110 Z" fill="var(--weld)" stroke="var(--ink)" stroke-width="1.5"/><line x1="262" y1="111" x2="290" y2="111" stroke="var(--dye)" stroke-width="2.5"/><circle cx="278" cy="110" r="22" fill="none" stroke="var(--dye)" stroke-dasharray="4 3"/>`),q:"El metal de soldadura rebalsa sin fundirse con el metal base. ¿Qué es?",o:["Socavación","Refuerzo excesivo","Solapamiento","Porosidad"],a:2,e:"Metal de aporte sobre el metal base sin fusión: solapamiento (overlap)."},
+  {m:"VT",svg:weldBase(`<circle cx="130" cy="96" r="4" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/><circle cx="150" cy="90" r="3" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/><circle cx="172" cy="94" r="4.5" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/><circle cx="190" cy="99" r="3" fill="var(--bg)" stroke="var(--dye)" stroke-width="2"/>`),q:"Cavidades redondeadas en la cara de la soldadura:",o:["Grietas","Porosidad superficial","Inclusión de escoria","Socavación"],a:1,e:"Cavidades redondeadas por gas atrapado: porosidad."},
+  {m:"PT",svg:`<svg viewBox="0 0 320 170" role="img"><rect x="0" y="0" width="320" height="170" fill="var(--surface)"/><rect x="40" y="70" width="240" height="34" rx="6" fill="var(--bg)" stroke="var(--line)"/><path d="M90 88 L130 84 L170 89 L215 85" stroke="var(--dye)" stroke-width="3" fill="none" stroke-linecap="round"/><text x="12" y="160" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)">VISTA SUPERIOR · REVELADOR BLANCO · PT TIPO II</text></svg>`,q:"Indicación roja de 32 mm de largo y 1 mm de ancho. ¿Cómo se clasifica?",o:["Redondeada","Lineal","No relevante","Falsa por exceso de revelador"],a:1,e:"Largo mayor que 3 veces el ancho: lineal. Puede corresponder a una grieta y se evalúa según el código."},
+  {m:"PT",svg:`<svg viewBox="0 0 320 170" role="img"><rect x="0" y="0" width="320" height="170" fill="var(--surface)"/><rect x="40" y="70" width="240" height="34" rx="6" fill="var(--bg)" stroke="var(--line)"/><circle cx="110" cy="87" r="5" fill="var(--dye)"/><circle cx="160" cy="84" r="4" fill="var(--dye)"/><ellipse cx="205" cy="89" rx="6" ry="4" fill="var(--dye)"/><text x="12" y="160" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--muted)">VISTA SUPERIOR · REVELADOR BLANCO · PT TIPO II</text></svg>`,q:"Tres manchas circulares y elípticas. ¿Qué tipo de indicación son?",o:["Lineales","Redondeadas","Falta de fusión","Grieta ramificada"],a:1,e:"Largo igual o menor a 3 veces el ancho: indicaciones redondeadas, típicas de porosidad."}
+];
+
+/* ---------- Estado (solo en este navegador) ---------- */
+const KEY="ndt-proto-v1";
+let S={done:{},answers:0,correct:0,email:"",name:""};
+try{const r=localStorage.getItem(KEY); if(r) S=Object.assign(S,JSON.parse(r));}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let view={tab:"home"};
+const app=document.getElementById("app");
+const pct=(c)=>{const L=COURSES[c].lessons.length; if(!L) return 0; return Math.round(100*COURSES[c].lessons.filter((_,i)=>S.done[c+i]).length/L);};
+
+const depth=v=>v.quiz?3:v.lesson!==undefined?2:v.course!==undefined?1:0;
+const TABS=["home","learn","practice","profile"];
+function go(v){const dir=(depth(v)<depth(view)||(depth(v)===depth(view)&&TABS.indexOf(v.tab)<TABS.indexOf(view.tab)))?"back":"fwd";view=v;render(dir);window.scrollTo(0,0);}
+document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>go({tab:b.dataset.tab}));
+
+function routeCard(c){
+  const C=COURSES[c];
+  if(C.locked) return `<div class="route locked" aria-disabled="true"><div class="code">${C.code}</div><div class="info"><h3>${C.name}</h3><span class="muted" style="font-size:.85rem">Próximamente</span></div><span class="chev">🔒</span></div>`;
+  return `<button class="route ${C.cls}" data-course="${c}"><div class="code">${C.code}</div><div class="info"><h3>${C.name}</h3><span class="muted" style="font-size:.85rem">${C.lessons.length} lecciones · ${QUIZ[c].length} preguntas</span><div class="bar"><span style="width:${pct(c)}%"></span></div></div><span class="chev">›</span></button>`;
+}
+
+function render(dir){
+  document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===view.tab));
+  const t=view.tab; let h="";
+  if(view.course!==undefined && view.lesson===undefined && !view.quiz){ h=courseView(view.course); }
+  else if(view.lesson!==undefined){ h=lessonView(view.course,view.lesson); }
+  else if(view.quiz){ h=quizView(); }
+  else if(t==="home") h=homeView();
+  else if(t==="learn") h=learnView();
+  else if(t==="practice") h=practiceView();
+  else h=profileView();
+  app.innerHTML=h; app.classList.remove("enter-fwd","enter-back"); if(dir){void app.offsetWidth; app.classList.add("enter-"+dir);} bind(); animateBars();
+}
+
+function homeView(){
+  const hi=S.name?`Hola, ${esc(S.name)}`:"Aprende ensayos no destructivos";
+  return `<header class="top"><div class="brand"><div class="mark">ISC</div><div><div class="eyebrow">Inspección Soldadura Chile</div><strong>Academia NDT</strong></div></div><span class="pill">GRATIS</span></header>
+  <div class="demo">Prototipo para validar. Contenido de ejemplo pendiente de revisión técnica.</div>
+  <section class="stack"><h1>${hi}</h1><p class="muted">Lecciones cortas, preguntas tipo examen y práctica con indicaciones reales. Para quien parte en el rubro y para quien prepara su Nivel I o II.</p></section>
+  <section class="stats"><div class="stat"><b>${Object.keys(S.done).length}</b><span>lecciones</span></div><div class="stat"><b>${S.answers}</b><span>respuestas</span></div><div class="stat"><b>${S.answers?Math.round(100*S.correct/S.answers):0}%</b><span>aciertos</span></div></section>
+  <section class="stack"><div class="eyebrow">Sigue aprendiendo</div>${routeCard("VT")}${routeCard("PT")}</section>
+  <section class="card"><h3>Práctica rápida</h3><p class="muted">Identifica discontinuidades e indicaciones en ${PRACTICE.length} casos.</p><button class="btn" data-go="practice">Empezar práctica</button></section>`;
+}
+function learnView(){
+  return `<section class="stack"><div class="eyebrow">Rutas por método</div><h1>Aprender</h1></section><section class="stack">${["VT","PT","MT","UT","RT"].map(routeCard).join("")}</section>`;
+}
+function courseView(c){
+  const C=COURSES[c];
+  return `<button class="back" data-back>‹ Volver</button><section class="stack"><div class="eyebrow">${C.code} · ${C.lessons.length} lecciones</div><h1>${C.name}</h1><div class="bar"><span style="width:${pct(c)}%"></span></div></section>
+  <section class="stack">${C.lessons.map((l,i)=>`<button class="lesson" data-lesson="${i}"><div class="t"><strong>${l.t}</strong><div class="muted" style="font-size:.82rem">${l.min} min de lectura</div></div><span class="check ${S.done[c+i]?"done":""}">${S.done[c+i]?"✓":""}</span></button>`).join("")}</section>
+  <section class="card"><h3>Pon a prueba lo aprendido</h3><p class="muted">${QUIZ[c].length} preguntas tipo examen con explicación.</p><button class="btn" data-quiz="${c}">Hacer el quiz de ${C.code}</button></section>`;
+}
+function lessonView(c,i){
+  const L=COURSES[c].lessons[i], last=i===COURSES[c].lessons.length-1;
+  return `<button class="back" data-back>‹ ${COURSES[c].name}</button><section class="stack"><div class="eyebrow">${c} · Lección ${i+1} de ${COURSES[c].lessons.length}</div><h1>${L.t}</h1></section>
+  <article class="card body">${L.body}</article>
+  <button class="btn" data-complete>${last?"Completar y hacer el quiz":"Completar y seguir"}</button>`;
+}
+function quizView(){
+  const q=view.quiz, set=q.set, item=set[q.i];
+  if(q.i>=set.length){
+    const C=2*Math.PI*60; return `<section class="stack"><div class="eyebrow">Resultado</div><svg class="ring" viewBox="0 0 140 140"><circle class="bg" cx="70" cy="70" r="60"/><circle class="fg" cx="70" cy="70" r="60" stroke-dasharray="${C}" style="stroke-dashoffset:${C}" data-to="${C*(1-q.ok/set.length)}"/><text x="70" y="80" text-anchor="middle" font-family="Barlow Condensed,sans-serif" font-size="34" font-weight="700" style="fill:var(--ink)"><tspan class="score" data-to="${q.ok}">0</tspan>/${set.length}</text></svg><h1>${q.ok} de ${set.length} correctas</h1><p class="muted">${q.ok===set.length?"Dominas este bloque.":"Revisa las explicaciones y vuelve a intentarlo."}</p></section><div class="row"><button class="btn" data-retry>Repetir</button><button class="btn ghost" data-back>Volver</button></div>`;
+  }
+  const answered=q.picked!==undefined;
+  return `<button class="back" data-back>‹ Salir</button><div class="progress-dots">${set.map((_,k)=>`<i class="${k<=q.i?"on":""}"></i>`).join("")}</div>
+  <section class="stack"><div class="eyebrow">${q.label} · Pregunta ${q.i+1} de ${set.length}</div>${item.svg?`<div class="figure">${item.svg}</div>`:""}${item.img?`<div class="figure photo-q">${item.img}</div>`:""}<h2>${item.q}</h2></section>
+  <div class="opts">${item.o.map((o,k)=>`<button class="opt ${answered&&k===item.a?"right":""} ${answered&&k===q.picked&&k!==item.a?"wrong":""}" data-pick="${k}" ${answered?"disabled":""}>${o}</button>`).join("")}</div>
+  ${answered?`<div class="feedback ${q.picked===item.a?"":"no"}"><strong>${q.picked===item.a?"Correcto.":"Incorrecto."}</strong> ${item.e}</div><button class="btn" data-next>${q.i===set.length-1?"Ver resultado":"Siguiente"}</button>`:""}`;
+}
+function practiceView(){
+  return `<section class="stack"><div class="eyebrow">Práctica visual</div><h1>¿Qué ves en la imagen?</h1><p class="muted">Casos de VT y PT. En la versión final se usarán fotos reales de terreno.</p></section>
+  <section class="card"><h3>${PRACTICE.length} casos mixtos</h3><p class="muted">Ilustraciones y esquemas de VT, PT y discontinuidades internas.</p><button class="btn" data-practice>Empezar</button></section>`;
+}
+function profileView(){
+  return `<section class="stack"><div class="eyebrow">Tu cuenta</div><h1>Perfil</h1></section>
+  <form class="card" id="reg"><h3>${S.email?"Datos guardados":"Guarda tu progreso"}</h3><p class="muted">Recibe nuevas lecciones y avisos de cursos de Inspección Soldadura Chile.</p>
+  <label for="nm">Nombre</label><input id="nm" type="text" value="${esc(S.name)}" autocomplete="given-name">
+  <label for="em">Correo</label><input id="em" type="email" value="${esc(S.email)}" required autocomplete="email">
+  <button class="btn" type="submit">Guardar</button><p class="demo">Demo: los datos quedan solo en este navegador y no se envían a ningún lado.</p></form>
+  <button class="btn ghost" data-reset>Borrar mi progreso</button>`;
+}
+function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+
+function startQuiz(set,label,from){view={tab:view.tab,quiz:{set,label,i:0,ok:0,from}};render("fwd");window.scrollTo(0,0);}
+function bind(){
+  app.querySelectorAll("svg *").forEach(el=>["fill","stroke"].forEach(a=>{const v=el.getAttribute(a); if(v&&v.startsWith("var(")) el.style[a]=v;}));
+  app.querySelectorAll("[data-course]").forEach(b=>b.onclick=()=>go({tab:"learn",course:b.dataset.course}));
+  app.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go({tab:b.dataset.go}));
+  app.querySelectorAll("[data-lesson]").forEach(b=>b.onclick=()=>go({tab:view.tab,course:view.course,lesson:+b.dataset.lesson}));
+  const back=app.querySelector("[data-back]");
+  if(back) back.onclick=()=>{ if(view.lesson!==undefined) go({tab:view.tab,course:view.course}); else if(view.quiz&&view.quiz.from) go(view.quiz.from); else go({tab:view.tab}); };
+  const comp=app.querySelector("[data-complete]");
+  if(comp) comp.onclick=()=>{const c=view.course,i=view.lesson;S.done[c+i]=1;save(); if(i<COURSES[c].lessons.length-1) go({tab:view.tab,course:c,lesson:i+1}); else startQuiz(QUIZ[c],c,{tab:view.tab,course:c});};
+  const qz=app.querySelector("[data-quiz]");
+  if(qz) qz.onclick=()=>startQuiz(QUIZ[qz.dataset.quiz],qz.dataset.quiz,{tab:view.tab,course:qz.dataset.quiz});
+  const pr=app.querySelector("[data-practice]");
+  if(pr) pr.onclick=()=>startQuiz(PRACTICE,"Práctica",{tab:"practice"});
+  app.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{const q=view.quiz;q.picked=+b.dataset.pick;S.answers++; if(q.picked===q.set[q.i].a){q.ok++;S.correct++;} save();render();});
+  const nx=app.querySelector("[data-next]");
+  if(nx) nx.onclick=()=>{const q=view.quiz;q.i++;delete q.picked;render("fwd");window.scrollTo(0,0);};
+  const rt=app.querySelector("[data-retry]");
+  if(rt) rt.onclick=()=>startQuiz(view.quiz.set,view.quiz.label,view.quiz.from);
+  const reg=app.querySelector("#reg");
+  if(reg) reg.onsubmit=(e)=>{e.preventDefault();S.name=reg.nm.value.trim();S.email=reg.em.value.trim();save();render();};
+  const rs=app.querySelector("[data-reset]");
+  if(rs) rs.onclick=()=>{ if(rs.dataset.sure){S={done:{},answers:0,correct:0,email:"",name:""};save();render();} else {rs.dataset.sure=1;rs.textContent="Toca otra vez para confirmar";} };
+}
+function animateBars(){app.querySelectorAll(".bar span").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>requestAnimationFrame(()=>b.style.width=w));});
+  const r=app.querySelector(".ring .fg"); if(r){const t=+r.dataset.to;requestAnimationFrame(()=>requestAnimationFrame(()=>r.style.strokeDashoffset=t));}
+  const sc=app.querySelector(".score[data-to]"); if(sc){const to=+sc.dataset.to,t0=performance.now();const step=n=>{const k=Math.min(1,(n-t0)/800);sc.textContent=Math.round(to*k);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step);}}
+render("fwd");
+</script>
+<script>
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
+</script>
+</body>
+</html>
