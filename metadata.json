@@ -1,0 +1,6 @@
+{
+  "name": "Inspección Soldadura Chile - Portal NDT",
+  "description": "Plataforma oficial de acreditaciones NDT, registro de bitácora en terreno, simuladores de inspección de soldadura y credenciales digitales para faena minera y estructural.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

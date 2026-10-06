@@ -1,0 +1,70 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #081423;
+    color: #d7e3f9;
+    font-family: 'Montserrat', sans-serif;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #081423;
+}
+::-webkit-scrollbar-thumb {
+  background: #1d3557;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff6b00;
+}
+
+/* Industrial arc ring indicator */
+.arc-ring-indicator {
+  position: relative;
+}
+.arc-ring-indicator::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  padding: 2px;
+  background: conic-gradient(#ff6b00 0deg 90deg, transparent 90deg 180deg, #00d2ff 180deg 270deg, transparent 270deg 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Welding arc flicker animation */
+@keyframes arcGlow {
+  0%, 100% { opacity: 0.9; filter: drop-shadow(0 0 12px rgba(255, 107, 0, 0.4)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6)); }
+}
+
+.animate-arc-glow {
+  animation: arcGlow 3s infinite ease-in-out;
+}
+
+/* Material symbol styling helper */
+.mat-icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
