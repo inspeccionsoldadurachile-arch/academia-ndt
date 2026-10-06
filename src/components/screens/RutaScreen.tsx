@@ -1,194 +1,85 @@
-import React, { useState } from 'react';
-import { ROADMAP_STEPS } from '../../data/mockData';
-import { RoadMapStep, InspectorProfile } from '../../types';
+import React from 'react';
+import { COURSES } from '../../data/content';
+import { Progress } from '../../store';
+import { Bar, Icon } from '../ui';
 
-interface RutaScreenProps {
-  profile: InspectorProfile;
-  totalLogHours: number;
-}
+export const METHOD_ORDER = ['VT', 'PT', 'MT', 'UT', 'RT'] as const;
+export const METHOD_ICON: Record<string, string> = { VT: 'visibility', PT: 'water_drop', MT: 'bolt', UT: 'graphic_eq', RT: 'radiology' };
 
-export const RutaScreen: React.FC<RutaScreenProps> = ({ profile, totalLogHours }) => {
-  const [dailyHoursGoal, setDailyHoursGoal] = useState<number>(6);
+export const lessonPct = (p: Progress, c: string) => {
+  const L = COURSES[c].lessons.length;
+  if (!L) return 0;
+  return Math.round((100 * COURSES[c].lessons.filter((_: unknown, i: number) => p.done[c + i]).length) / L);
+};
 
-  const hoursRemaining = Math.max(0, 400 - totalLogHours);
-  const daysRemaining = Math.ceil(hoursRemaining / (dailyHoursGoal || 1));
-  const estimatedDate = new Date();
-  estimatedDate.setDate(estimatedDate.getDate() + daysRemaining);
-
+export const RutaScreen: React.FC<{ p: Progress; onOpen: (c: string) => void }> = ({ p, onOpen }) => {
+  const current = METHOD_ORDER.find((c) => !COURSES[c].locked && lessonPct(p, c) < 100) || 'VT';
   return (
     <div className="flex flex-col w-full px-3.5 space-y-3.5 max-w-2xl mx-auto">
-      {/* Header Banner */}
-      <section className="bg-gradient-to-b from-[#112238] to-[#0d1e33] border border-[#1d3557] rounded-xl p-3.5 shadow-lg relative overflow-hidden">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-full p-0.5 bg-gradient-to-tr from-[#ff6b00] to-[#00d2ff] flex items-center justify-center">
-              <span className="material-symbols-outlined text-[22px] text-white">explore</span>
-            </div>
-            <div>
-              <span className="text-[10px] text-[#4cd6fb] font-bold uppercase tracking-wider block">
-                CARRERA Y CALIFICACIÓN OFICIAL
-              </span>
-              <h2 className="text-base font-extrabold text-white leading-tight">
-                Ruta Formativa NDT
-              </h2>
-            </div>
-          </div>
-          <span className="px-2 py-0.5 rounded bg-[#081423] border border-[#1d3557] text-[#ff6b00] text-[10px] font-bold uppercase">
-            FASE NIVEL II
-          </span>
-        </div>
+      <section className="bg-gradient-to-b from-[#112238] to-[#0d1e33] border border-[#1d3557] rounded-xl p-4 shadow-lg relative overflow-hidden">
+        <span className="text-[10px] text-[#4cd6fb] font-bold uppercase tracking-wider block">Tu ruta de aprendizaje</span>
+        <h1 className="text-xl font-extrabold text-white leading-tight mt-0.5">
+          {p.name ? `Hola, ${p.name}` : 'Aprende ensayos no destructivos'}
+        </h1>
+        <p className="text-[13px] text-[#9db4d4] mt-1.5 leading-relaxed">
+          Lecciones cortas, preguntas tipo examen y práctica con ilustraciones. Para quien parte en el rubro y para quien prepara su Nivel I o II.
+        </p>
+        <button
+          onClick={() => onOpen(current)}
+          className="mt-3 w-full py-3 rounded-lg bg-[#ff6b00] text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[.98] shadow-[0_4px_16px_rgba(255,107,0,0.3)]"
+        >
+          <Icon name="play_arrow" fill className="text-[20px]" />
+          Continuar con {COURSES[current].name}
+        </button>
       </section>
 
-      {/* SNT-TC-1A Hours Estimator Widget */}
-      <section className="bg-[#112238] border border-[#1d3557] rounded-xl p-3.5 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="font-extrabold text-white text-xs uppercase">
-              Calculador de Meta Nivel II
-            </h3>
-            <span className="text-[10px] text-[#9db4d4]">
-              Horas de terreno requeridas según ASNT SNT-TC-1A
-            </span>
-          </div>
-          <span className="text-xs font-bold text-[#4cd6fb] tabular-nums">
-            {totalLogHours} / 400 hrs
-          </span>
-        </div>
-
-        <div className="w-full h-2.5 bg-[#040f1d] rounded-full overflow-hidden border border-[#1d3557]">
-          <div 
-            className="h-full bg-gradient-to-r from-[#00d2ff] to-[#ff6b00] transition-all rounded-full"
-            style={{ width: `${Math.min(100, (totalLogHours / 400) * 100)}%` }}
-          ></div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 text-xs bg-[#0d1e33] p-2.5 rounded border border-[#1d3557]">
-          <div>
-            <label className="text-[9px] text-[#9db4d4] uppercase block">
-              Horas Promedio por Jornada:
-            </label>
-            <div className="flex items-center gap-1 mt-1">
-              <input
-                type="number"
-                min="1"
-                max="12"
-                value={dailyHoursGoal}
-                onChange={(e) => setDailyHoursGoal(parseFloat(e.target.value) || 1)}
-                className="w-16 bg-[#081423] border border-[#1d3557] text-white text-xs font-bold rounded p-1 text-center"
-              />
-              <span className="text-[#9db4d4] text-[11px]">hrs/día</span>
-            </div>
-          </div>
-
-          <div className="text-right">
-            <span className="text-[9px] text-[#9db4d4] uppercase block">
-              Estimación de Titulación:
-            </span>
-            <span className="text-[#ff6b00] font-extrabold text-xs block mt-1">
-              En {daysRemaining} días de turno
-            </span>
-            <span className="text-[9px] text-[#9db4d4]">
-              ({estimatedDate.toLocaleDateString('es-CL', { month: 'short', year: 'numeric' })})
-            </span>
-          </div>
-        </div>
-      </section>
-
-      {/* Stepper Roadmap */}
-      <section className="space-y-3">
-        <span className="text-[10px] text-[#9db4d4] uppercase font-bold tracking-wider block">
-          Etapas de la Carrera Técnica
-        </span>
-
-        {ROADMAP_STEPS.map((step, idx) => {
-          const isCurrent = step.status === 'actual';
-          const isDone = step.status === 'completado';
-
+      <ol className="relative space-y-2.5">
+        <span className="absolute left-[27px] top-6 bottom-6 w-px bg-[#1d3557]" aria-hidden="true" />
+        {METHOD_ORDER.map((c) => {
+          const C = COURSES[c];
+          const pct = lessonPct(p, c);
+          const done = !C.locked && pct === 100;
           return (
-            <div 
-              key={step.id}
-              className={`p-3.5 rounded-xl border text-xs relative overflow-hidden transition-all ${
-                isCurrent
-                  ? 'bg-gradient-to-b from-[#112238] to-[#0d1e33] border-[#4cd6fb]/60 shadow-md'
-                  : isDone
-                  ? 'bg-[#112238] border-[#1d3557]'
-                  : 'bg-[#081423] border-[#1d3557] opacity-60'
-              }`}
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs ${
-                    isDone 
-                      ? 'bg-[#00e676] text-[#003543]' 
-                      : isCurrent 
-                      ? 'bg-[#ff6b00] text-white' 
-                      : 'bg-[#1d3557] text-[#9db4d4]'
-                  }`}>
-                    {isDone ? '✓' : idx + 1}
-                  </div>
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-[#4cd6fb] block leading-tight">
-                      {step.level}
-                    </span>
-                    <h4 className="font-extrabold text-white text-xs mt-0.5">
-                      {step.title}
-                    </h4>
-                  </div>
-                </div>
-
-                <span className={`text-[9px] font-bold uppercase px-2 py-0.5 rounded ${
-                  isDone 
-                    ? 'bg-[#00e676]/20 text-[#00e676]' 
-                    : isCurrent 
-                    ? 'bg-[#ff6b00]/20 text-[#ff6b00]' 
-                    : 'bg-[#1d3557] text-[#9db4d4]'
-                }`}>
-                  {isDone ? 'APROBADO' : isCurrent ? 'EN PROCESO' : 'BLOQUEADO'}
+            <li key={c}>
+              <button
+                disabled={C.locked}
+                onClick={() => onOpen(c)}
+                className={`relative w-full flex items-center gap-3 text-left bg-[#0d1e33] border rounded-xl p-3 transition-all ${
+                  C.locked ? 'border-[#1d3557] opacity-55' : c === current ? 'border-[#ff6b00]/70 active:scale-[.98]' : 'border-[#1d3557] hover:border-[#4cd6fb]/60 active:scale-[.98]'
+                }`}
+              >
+                <span
+                  className={`z-10 w-12 h-12 shrink-0 rounded-full grid place-items-center border-2 ${
+                    done ? 'bg-[#2bd97c] border-[#2bd97c] text-[#081423]' : C.locked ? 'bg-[#081423] border-[#1d3557] text-[#9db4d4]' : 'bg-[#081423] border-[#ff6b00] text-[#ff6b00]'
+                  }`}
+                >
+                  <Icon name={done ? 'check' : C.locked ? 'lock' : METHOD_ICON[c]} className="text-[22px]" />
                 </span>
-              </div>
-
-              <div className="mt-2.5 pt-2 border-t border-[#1d3557]/60 grid grid-cols-2 gap-2 text-[11px]">
-                <div className="text-[#9db4d4]">
-                  <span>Requisito: </span>
-                  <span className="text-white font-medium">{step.normRequirement}</span>
-                </div>
-                <div className="text-right text-[#9db4d4]">
-                  <span>Examen: </span>
-                  <span className="text-[#4cd6fb]">{step.examType}</span>
-                </div>
-              </div>
-            </div>
+                <span className="flex-1 min-w-0 space-y-1.5">
+                  <span className="flex items-center gap-2">
+                    <span className="font-['JetBrains_Mono',monospace] text-[11px] font-bold text-[#4cd6fb]">{c}</span>
+                    <span className="font-bold text-white text-sm truncate">{C.name}</span>
+                  </span>
+                  {C.locked ? (
+                    <span className="text-[11px] text-[#9db4d4] block">Próximamente</span>
+                  ) : (
+                    <>
+                      <span className="text-[11px] text-[#9db4d4] block">
+                        {C.lessons.length} lecciones · {pct}% completado
+                      </span>
+                      <Bar pct={pct} color={done ? '#2bd97c' : '#ff6b00'} />
+                    </>
+                  )}
+                </span>
+              </button>
+            </li>
           );
         })}
-      </section>
+      </ol>
 
-      {/* Upcoming Official Examination Cohorts */}
-      <section className="bg-[#112238] border border-[#1d3557] rounded-xl p-3.5 space-y-2">
-        <div className="flex items-center justify-between">
-          <h3 className="font-extrabold text-white text-xs uppercase">
-            Fechas de Exámenes Oficiales en Chile
-          </h3>
-          <span className="text-[10px] text-[#ff6b00] font-bold">2026</span>
-        </div>
-
-        <div className="space-y-1.5 text-xs">
-          <div className="p-2 rounded bg-[#0d1e33] border border-[#1d3557] flex items-center justify-between">
-            <div>
-              <span className="text-white font-bold block">Antofagasta · Sede Minera</span>
-              <span className="text-[10px] text-[#9db4d4]">Examen Práctico MT / UT Nivel II</span>
-            </div>
-            <span className="text-[11px] text-[#4cd6fb] font-semibold">18 Nov 2026</span>
-          </div>
-
-          <div className="p-2 rounded bg-[#0d1e33] border border-[#1d3557] flex items-center justify-between">
-            <div>
-              <span className="text-white font-bold block">Santiago · Laboratorio Central</span>
-              <span className="text-[10px] text-[#9db4d4]">Examen Específico AWS D1.1</span>
-            </div>
-            <span className="text-[11px] text-[#4cd6fb] font-semibold">05 Dic 2026</span>
-          </div>
-        </div>
-      </section>
+      <p className="text-[11px] text-[#9db4d4] leading-relaxed px-1">
+        Esta app te ayuda a estudiar y practicar. No otorga certificación: la certificación de personal NDT la entrega tu empleador según SNT-TC-1A o un organismo según ISO 9712.
+      </p>
     </div>
   );
 };

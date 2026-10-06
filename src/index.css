@@ -68,3 +68,34 @@
   white-space: nowrap;
   direction: ltr;
 }
+
+/* ---- Academia NDT ---- */
+:root {
+  /* Colores que usan los esquemas SVG de las lecciones */
+  --ink: #d7e3f9; --muted: #9db4d4; --bg: #081423; --surface: #0d1e33; --line: #1d3557;
+  --metal: #2b4262; --weld: #5a7396; --dye: #ff5a6e; --dye-soft: rgba(255, 90, 110, 0.12);
+  --steel: #4cd6fb; --dev: #e4e8eb;
+  color-scheme: dark;
+}
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; display: inline-block; white-space: nowrap; overflow: hidden; max-width: 1.2em; }
+@keyframes sheetIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.lesson-body { font-size: 15px; line-height: 1.6; color: #c4d3ea; }
+.lesson-body > * + * { margin-top: 12px; }
+.lesson-body b { color: #fff; }
+.lesson-body ul { padding-left: 20px; list-style: disc; }
+.lesson-body li + li { margin-top: 4px; }
+.lesson-body .key { background: rgba(255, 107, 0, 0.1); border: 1px solid rgba(255, 107, 0, 0.35); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.lesson-body .key b { color: #ff8a3d; }
+.lesson-body .ill { margin: 0; background: #0d1e33; border: 1px solid #1d3557; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.lesson-body .ill svg { width: 100%; height: auto; display: block; }
+.lesson-body figcaption { font: 600 10px 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #9db4d4; }
+.lesson-body .illgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lesson-body .eyebrow { font: 700 10px 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #4cd6fb; }
+.lesson-body .photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.lesson-body .photo { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.lesson-body .photo img, .quiz-figure img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: #fff; display: block; }
+.lesson-body .photo figcaption { font: 400 12px/1.35 'Montserrat', sans-serif; text-transform: none; letter-spacing: 0; display: flex; flex-direction: column; gap: 2px; }
+.lesson-body .photo figcaption b { color: #fff; }
+.quiz-figure svg { width: 100%; height: auto; display: block; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
