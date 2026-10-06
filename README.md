@@ -1,9 +1,17 @@
 # Academia NDT · Inspección Soldadura Chile
 
-App web instalable (PWA) y gratuita para aprender ensayos no destructivos. Contenido inicial: VT y PT.
+App gratuita e instalable (PWA) para aprender ensayos no destructivos. Diseño creado en Google Stitch y AI Studio; contenido de Inspección Soldadura Chile.
 
-- `index.html`: la app completa (contenido, lecciones, quizzes y práctica).
-- `img/`: ilustraciones de discontinuidades (autoría de Inspección Soldadura Chile).
-- `manifest.webmanifest`, `icons/`, `sw.js`: instalación en el celular y uso sin conexión.
+- `src/data/content.ts`: lecciones, quizzes y práctica visual (contenido en revisión técnica).
+- `src/components/screens/`: Ruta, Aprender, Taller (práctica visual y simuladores) y Avance.
+- `public/img/`: ilustraciones propias. `public/sw.js`: uso sin conexión (sube `CACHE` al publicar cambios).
 
-Al publicar contenido nuevo, sube la versión de `CACHE` en `sw.js`.
+## Desarrollo
+
+```
+npm install --legacy-peer-deps
+npm run dev      # vista local
+npm run build    # genera dist/ para publicar
+```
+
+Al hacer push a `main`, GitHub Actions compila la app y la publica en GitHub Pages.
