@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+@layer base {
+  html, body {
+    margin: 0;
+    padding: 0;
+    background-color: #081423;
+    color: #d7e3f9;
+    font-family: 'Montserrat', sans-serif;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #081423;
+}
+::-webkit-scrollbar-thumb {
+  background: #1d3557;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #ff6b00;
+}
+
+/* Industrial arc ring indicator */
+.arc-ring-indicator {
+  position: relative;
+}
+.arc-ring-indicator::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  padding: 2px;
+  background: conic-gradient(#ff6b00 0deg 90deg, transparent 90deg 180deg, #00d2ff 180deg 270deg, transparent 270deg 360deg);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Welding arc flicker animation */
+@keyframes arcGlow {
+  0%, 100% { opacity: 0.9; filter: drop-shadow(0 0 12px rgba(255, 107, 0, 0.4)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 20px rgba(0, 210, 255, 0.6)); }
+}
+
+.animate-arc-glow {
+  animation: arcGlow 3s infinite ease-in-out;
+}
+
+/* Material symbol styling helper */
+.mat-icon {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+}
+
+/* ---- Academia NDT ---- */
+:root {
+  /* Colores que usan los esquemas SVG de las lecciones */
+  --ink: #d7e3f9; --muted: #9db4d4; --bg: #081423; --surface: #0d1e33; --line: #1d3557;
+  --metal: #2b4262; --weld: #5a7396; --dye: #ff5a6e; --dye-soft: rgba(255, 90, 110, 0.12);
+  --steel: #4cd6fb; --dev: #e4e8eb;
+  color-scheme: dark;
+}
+.material-symbols-outlined { font-family: 'Material Symbols Outlined'; font-weight: normal; font-style: normal; display: inline-block; white-space: nowrap; overflow: hidden; max-width: 1.2em; }
+@keyframes sheetIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.lesson-body { font-size: 15px; line-height: 1.6; color: #c4d3ea; }
+.lesson-body > * + * { margin-top: 12px; }
+.lesson-body b { color: #fff; }
+.lesson-body ul { padding-left: 20px; list-style: disc; }
+.lesson-body li + li { margin-top: 4px; }
+.lesson-body .key { background: rgba(255, 107, 0, 0.1); border: 1px solid rgba(255, 107, 0, 0.35); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.lesson-body .key b { color: #ff8a3d; }
+.lesson-body .ill { margin: 0; background: #0d1e33; border: 1px solid #1d3557; border-radius: 12px; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.lesson-body .ill svg { width: 100%; height: auto; display: block; }
+.lesson-body figcaption { font: 600 10px 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #9db4d4; }
+.lesson-body .illgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.lesson-body .eyebrow { font: 700 10px 'JetBrains Mono', monospace; letter-spacing: .06em; text-transform: uppercase; color: #4cd6fb; }
+.lesson-body .photos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 8px; }
+.lesson-body .photo { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.lesson-body .photo img, .quiz-figure img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 10px; background: #fff; display: block; }
+.lesson-body .photo figcaption { font: 400 12px/1.35 'Montserrat', sans-serif; text-transform: none; letter-spacing: 0; display: flex; flex-direction: column; gap: 2px; }
+.lesson-body .photo figcaption b { color: #fff; }
+.quiz-figure svg { width: 100%; height: auto; display: block; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
