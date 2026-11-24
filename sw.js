@@ -1,6 +1,6 @@
 // Cambia la versión al publicar contenido nuevo para que los celulares actualicen.
-const CACHE = "academia-ndt-v1";
-const CORE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png",
+const CACHE = "academia-ndt-v2";
+const CORE = ["./", "index.html", "manifest.webmanifest", "icons/icon-192.png", "icons/icon-512.png", "simulador.js", "data/simulador-gratis.json",
   "img/grieta-longitudinal.jpg", "img/grieta-transversal.jpg", "img/grieta-crater.jpg", "img/porosidad-superficial.jpg",
   "img/perforacion.jpg", "img/falta-penetracion.jpg", "img/inclusion-escoria.jpg", "img/porosidad-interna.jpg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(CORE))); self.skipWaiting(); });
