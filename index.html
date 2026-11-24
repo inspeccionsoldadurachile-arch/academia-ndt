@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f4a5e">
-<meta name="description" content="App gratuita de Inspección Soldadura Chile para aprender ensayos no destructivos: VT y PT.">
+<meta name="description" content="App gratuita de Inspección Soldadura Chile para aprender ensayos no destructivos: lecciones de VT y PT y simulador de examen.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -89,13 +89,23 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--steel);outline-
 label{font-weight:600;font-size:.9rem}
 input[type=email],input[type=text]{width:100%;font:inherit;padding:11px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px)}
-nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.tabs .in{max-width:480px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav.tabs button{background:none;border:0;padding:10px 4px 12px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;color:var(--muted)}
 nav.tabs button.on{color:var(--ink);font-weight:600}
 nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8}
 
 .ill{margin:0;background:var(--bg);border-radius:10px;padding:8px;display:flex;flex-direction:column;gap:6px}.ill svg{width:100%;height:auto;display:block}.ill figcaption{font:500 .72rem var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}.illgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.body .ill+p,.body .illgrid+ul,.body p+.ill{margin-top:10px}
 .photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-block:8px 14px}.photo{margin:0;display:flex;flex-direction:column;gap:6px}.photo img,.photo-q img{width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:8px;background:#fff;display:block}.photo figcaption{display:flex;flex-direction:column;gap:2px;font-size:.82rem;line-height:1.35}.photo figcaption span{color:var(--muted)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font:600 .85rem var(--body)}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.opt.sel{border-color:var(--steel);box-shadow:inset 0 0 0 2px var(--steel)}
+.progress-dots i.ans{background:var(--muted)}
+.timer{font:600 1rem var(--mono);font-variant-numeric:tabular-nums;padding:4px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+details.rev summary{cursor:pointer;list-style:none}details.rev summary::-webkit-details-marker{display:none}
+details.rev[open] summary{margin-bottom:6px}
+a.btn{display:block}
 /* ---- Movimiento ---- */
 :root{--ease:cubic-bezier(.2,.8,.2,1);--fast:140ms;--med:280ms}
 .app.enter-fwd>*{animation:inFwd var(--med) var(--ease) both}
@@ -135,6 +145,7 @@ nav.tabs button::after{content:"";width:0;height:3px;border-radius:2px;backgroun
   <button data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9H3z"/></svg>Inicio</button>
   <button data-tab="learn"><svg viewBox="0 0 24 24"><path d="M4 5h7v14H4zM13 5h7v14h-7z"/></svg>Aprender</button>
   <button data-tab="practice"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M16 16l5 5"/></svg>Práctica</button>
+  <button data-tab="sim"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Simulador</button>
   <button data-tab="profile"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
 </div></nav>
 
@@ -271,8 +282,8 @@ let view={tab:"home"};
 const app=document.getElementById("app");
 const pct=(c)=>{const L=COURSES[c].lessons.length; if(!L) return 0; return Math.round(100*COURSES[c].lessons.filter((_,i)=>S.done[c+i]).length/L);};
 
-const depth=v=>v.quiz?3:v.lesson!==undefined?2:v.course!==undefined?1:0;
-const TABS=["home","learn","practice","profile"];
+const depth=v=>(v.quiz||v.sim)?3:v.lesson!==undefined?2:v.course!==undefined?1:0;
+const TABS=["home","learn","practice","sim","profile"];
 function go(v){const dir=(depth(v)<depth(view)||(depth(v)===depth(view)&&TABS.indexOf(v.tab)<TABS.indexOf(view.tab)))?"back":"fwd";view=v;render(dir);window.scrollTo(0,0);}
 document.querySelectorAll("nav.tabs button").forEach(b=>b.onclick=()=>go({tab:b.dataset.tab}));
 
@@ -285,12 +296,14 @@ function routeCard(c){
 function render(dir){
   document.querySelectorAll("nav.tabs button").forEach(b=>b.classList.toggle("on",b.dataset.tab===view.tab));
   const t=view.tab; let h="";
-  if(view.course!==undefined && view.lesson===undefined && !view.quiz){ h=courseView(view.course); }
+  if(view.sim) h=simView();
+  else if(view.course!==undefined && view.lesson===undefined && !view.quiz){ h=courseView(view.course); }
   else if(view.lesson!==undefined){ h=lessonView(view.course,view.lesson); }
   else if(view.quiz){ h=quizView(); }
   else if(t==="home") h=homeView();
   else if(t==="learn") h=learnView();
   else if(t==="practice") h=practiceView();
+  else if(t==="sim") h=simView();
   else h=profileView();
   app.innerHTML=h; app.classList.remove("enter-fwd","enter-back"); if(dir){void app.offsetWidth; app.classList.add("enter-"+dir);} bind(); animateBars();
 }
@@ -302,6 +315,7 @@ function homeView(){
   <section class="stack"><h1>${hi}</h1><p class="muted">Lecciones cortas, preguntas tipo examen y práctica con indicaciones reales. Para quien parte en el rubro y para quien prepara su Nivel I o II.</p></section>
   <section class="stats"><div class="stat"><b>${Object.keys(S.done).length}</b><span>lecciones</span></div><div class="stat"><b>${S.answers}</b><span>respuestas</span></div><div class="stat"><b>${S.answers?Math.round(100*S.correct/S.answers):0}%</b><span>aciertos</span></div></section>
   <section class="stack"><div class="eyebrow">Sigue aprendiendo</div>${routeCard("VT")}${routeCard("PT")}</section>
+  <section class="card"><h3>Simulador de examen</h3><p class="muted">Practica con preguntas tipo examen de VT, PT, MT, UT y RT, o haz un examen con tiempo.</p><button class="btn" data-go="sim">Abrir simulador</button></section>
   <section class="card"><h3>Práctica rápida</h3><p class="muted">Identifica discontinuidades e indicaciones en ${PRACTICE.length} casos.</p><button class="btn" data-go="practice">Empezar práctica</button></section>`;
 }
 function learnView(){
@@ -366,13 +380,15 @@ function bind(){
   const reg=app.querySelector("#reg");
   if(reg) reg.onsubmit=(e)=>{e.preventDefault();S.name=reg.nm.value.trim();S.email=reg.em.value.trim();save();render();};
   const rs=app.querySelector("[data-reset]");
-  if(rs) rs.onclick=()=>{ if(rs.dataset.sure){S={done:{},answers:0,correct:0,email:"",name:""};save();render();} else {rs.dataset.sure=1;rs.textContent="Toca otra vez para confirmar";} };
+  if(typeof simBind==="function") simBind();
+  if(rs) rs.onclick=()=>{ if(rs.dataset.sure){S={done:{},answers:0,correct:0,email:"",name:"",sim:{met:"VT",lvl:"todos",stats:{},wrong:{}}};save();render();} else {rs.dataset.sure=1;rs.textContent="Toca otra vez para confirmar";} };
 }
 function animateBars(){app.querySelectorAll(".bar span").forEach(b=>{const w=b.style.width;b.style.width="0";requestAnimationFrame(()=>requestAnimationFrame(()=>b.style.width=w));});
   const r=app.querySelector(".ring .fg"); if(r){const t=+r.dataset.to;requestAnimationFrame(()=>requestAnimationFrame(()=>r.style.strokeDashoffset=t));}
   const sc=app.querySelector(".score[data-to]"); if(sc){const to=+sc.dataset.to,t0=performance.now();const step=n=>{const k=Math.min(1,(n-t0)/800);sc.textContent=Math.round(to*k);if(k<1)requestAnimationFrame(step)};requestAnimationFrame(step);}}
 render("fwd");
 </script>
+<script src="simulador.js"></script>
 <script>
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}
 </script>
